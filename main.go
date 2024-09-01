@@ -57,6 +57,8 @@ func main() {
 
 	go func() {
 		for {
+			slog.Info("start accept")
+
 			conn, err := listener.Accept()
 			if err != nil {
 				panic(err)
@@ -76,7 +78,7 @@ func main() {
 				slog.InfoContext(req.Context(), "request: "+string(dump))
 
 				res := http.Response{
-					StatusCode: 200,
+					StatusCode: http.StatusOK,
 					ProtoMajor: 1,
 					ProtoMinor: 0,
 					Body:       io.NopCloser(strings.NewReader("Hello, World!")),
@@ -115,6 +117,12 @@ func Hanele(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer func() {
+		if err := conn.Close(); err != nil {
+			slog.ErrorContext(r.Context(), "conn close error: "+err.Error())
+		}
+	}()
+
 	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, "", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -139,12 +147,6 @@ func Hanele(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.InfoContext(r.Context(), "response: "+string(dump))
-
-	defer func() {
-		if err := conn.Close(); err != nil {
-			slog.InfoContext(r.Context(), "conn close error: "+err.Error())
-		}
-	}()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
