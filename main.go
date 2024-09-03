@@ -25,7 +25,7 @@ func main() {
 
 	hdl := http.NewServeMux()
 
-	hdl.HandleFunc("/", Hanele)
+	hdl.HandleFunc("/", Handle)
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%s", port),
@@ -109,7 +109,7 @@ func main() {
 
 }
 
-func Hanele(w http.ResponseWriter, r *http.Request) {
+func Handle(w http.ResponseWriter, r *http.Request) {
 	conn, err := net.Dial("unix", "socket")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
